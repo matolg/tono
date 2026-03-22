@@ -25,9 +25,9 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     await _engine.init();
   }
 
-  void start() {
-    _engine.start(state.bpm, state.beatsPerBar);
+  Future<void> start() async {
     state = state.copyWith(status: MetronomeStatus.playing, currentBeat: 0);
+    await _engine.start(state.bpm, state.beatsPerBar);
   }
 
   void stop() {
@@ -35,7 +35,15 @@ class MetronomeNotifier extends Notifier<MetronomeState> {
     state = state.copyWith(status: MetronomeStatus.stopped, currentBeat: 0);
   }
 
+  /// Updates the displayed BPM only — does NOT restart the engine timer.
+  /// Call [applyBpm] when the user finishes dragging to update the engine.
   void setBpm(int bpm) {
+    final clamped = bpm.clamp(MetronomeState.minBpm, MetronomeState.maxBpm);
+    state = state.copyWith(bpm: clamped);
+  }
+
+  /// Updates the BPM display AND restarts the engine timer if playing.
+  void applyBpm(int bpm) {
     final clamped = bpm.clamp(MetronomeState.minBpm, MetronomeState.maxBpm);
     state = state.copyWith(bpm: clamped);
     if (state.isPlaying) _engine.updateBpm(clamped);

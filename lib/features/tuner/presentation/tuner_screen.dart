@@ -23,6 +23,19 @@ class TunerScreen extends ConsumerStatefulWidget {
 
 class _TunerScreenState extends ConsumerState<TunerScreen> {
   bool _wasInTune = false;
+  late TunerNotifier _notifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _notifier = ref.read(tunerProvider.notifier);
+  }
+
+  @override
+  void dispose() {
+    _notifier.stopListening();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +58,12 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
         state.status == TunerStatus.detected;
     final frameColor = isDark ? AppColors.surfaceDark : AppColors.surface;
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _notifier.stopListening();
+      },
+      child: Scaffold(
       appBar: AppBarWidget(title: l10n.screenTunerTitle, showBack: true),
       body: SafeArea(
         child: Padding(
@@ -148,6 +166,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
           ),
         ),
       ),
-    );
+    ), // Scaffold
+    ); // PopScope
   }
 }

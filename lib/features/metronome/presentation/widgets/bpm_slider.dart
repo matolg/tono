@@ -8,11 +8,20 @@ import '../../domain/metronome_state.dart';
 
 /// Slider (40–220 BPM) + ±1 buttons with long-press acceleration.
 /// Shows Italian tempo name below the slider.
+///
+/// [onChanged] fires continuously while dragging (update display only).
+/// [onChangeEnd] fires when drag or button press completes (update engine).
 class BpmSlider extends StatefulWidget {
   final int bpm;
   final ValueChanged<int> onChanged;
+  final ValueChanged<int> onChangeEnd;
 
-  const BpmSlider({super.key, required this.bpm, required this.onChanged});
+  const BpmSlider({
+    super.key,
+    required this.bpm,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
 
   @override
   State<BpmSlider> createState() => _BpmSliderState();
@@ -32,6 +41,7 @@ class _BpmSliderState extends State<BpmSlider> {
   void _stopRepeat() {
     _repeatTimer?.cancel();
     _repeatTimer = null;
+    widget.onChangeEnd(widget.bpm);
   }
 
   @override
@@ -72,6 +82,7 @@ class _BpmSliderState extends State<BpmSlider> {
               min: MetronomeState.minBpm.toDouble(),
               max: MetronomeState.maxBpm.toDouble(),
               onChanged: (v) => widget.onChanged(v.round()),
+              onChangeEnd: (v) => widget.onChangeEnd(v.round()),
             ),
           ),
         ),
@@ -98,9 +109,12 @@ class _BpmSliderState extends State<BpmSlider> {
               _StepButton(
                 icon: Icons.remove,
                 surface: surface,
-                onTap: () => widget.onChanged(
-                    (widget.bpm - 1)
-                        .clamp(MetronomeState.minBpm, MetronomeState.maxBpm)),
+                onTap: () {
+                  final v = (widget.bpm - 1)
+                      .clamp(MetronomeState.minBpm, MetronomeState.maxBpm);
+                  widget.onChanged(v);
+                  widget.onChangeEnd(v);
+                },
                 onLongPressStart: () => _startRepeat(-1),
                 onLongPressEnd: _stopRepeat,
               ),
@@ -113,9 +127,12 @@ class _BpmSliderState extends State<BpmSlider> {
               _StepButton(
                 icon: Icons.add,
                 surface: surface,
-                onTap: () => widget.onChanged(
-                    (widget.bpm + 1)
-                        .clamp(MetronomeState.minBpm, MetronomeState.maxBpm)),
+                onTap: () {
+                  final v = (widget.bpm + 1)
+                      .clamp(MetronomeState.minBpm, MetronomeState.maxBpm);
+                  widget.onChanged(v);
+                  widget.onChangeEnd(v);
+                },
                 onLongPressStart: () => _startRepeat(1),
                 onLongPressEnd: _stopRepeat,
               ),

@@ -1,12 +1,45 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:flutter_soloud/flutter_soloud.dart';
+
+// ── Isolate entry point ───────────────────────────────────────────────────────
+
+void _timerIsolate(SendPort mainPort) {
+  final port = ReceivePort();
+  mainPort.send(port.sendPort); // hand back control port
+
+  Timer? timer;
+
+  port.listen((msg) {
+    if (msg is int) {
+      // New BPM received — (re)start timer
+      timer?.cancel();
+      final interval = Duration(microseconds: (60000000 / msg).round());
+      mainPort.send('beat'); // first beat immediately
+      timer = Timer.periodic(interval, (_) => mainPort.send('beat'));
+    } else if (msg == 'stop') {
+      timer?.cancel();
+      timer = null;
+    } else if (msg == 'quit') {
+      timer?.cancel();
+      port.close();
+    }
+  });
+}
+
+// ── MetronomeEngine ───────────────────────────────────────────────────────────
 
 class MetronomeEngine {
   final _soloud = SoLoud.instance;
   AudioSource? _accent;
   AudioSource? _tick;
-  Timer? _timer;
+
+  Isolate? _isolate;
+  ReceivePort? _receivePort;
+  SendPort? _isolateSendPort;
+
+  bool _running = false;
   int _beat = 0;
   int _beatsPerBar = 4;
 
@@ -14,23 +47,32 @@ class MetronomeEngine {
   void Function(int beat)? onBeat;
 
   Future<void> init() async {
-    if (!_soloud.isInitialized) await _soloud.init();
+    if (!_soloud.isInitialized) await _soloud.init(bufferSize: 4096);
     _accent = await _soloud.loadAsset('assets/sounds/metronome_accent.wav');
     _tick = await _soloud.loadAsset('assets/sounds/metronome_tick.wav');
   }
 
-  void start(int bpm, int beatsPerBar) {
+  Future<void> start(int bpm, int beatsPerBar) async {
+    _running = true;
     _beatsPerBar = beatsPerBar;
     _beat = 0;
-    _fire();
-    _timer = Timer.periodic(_interval(bpm), (_) => _fire());
+
+    _receivePort = ReceivePort();
+    _isolate = await Isolate.spawn(_timerIsolate, _receivePort!.sendPort);
+
+    _receivePort!.listen((msg) {
+      if (msg is SendPort) {
+        _isolateSendPort = msg;
+        _isolateSendPort!.send(bpm); // kick off the timer
+      } else if (msg == 'beat') {
+        _fireBeat();
+      }
+    });
   }
 
-  /// Change BPM on the fly without resetting the beat counter.
+  /// Change BPM on the fly — sends new BPM to the isolate timer.
   void updateBpm(int bpm) {
-    if (_timer == null) return;
-    _timer!.cancel();
-    _timer = Timer.periodic(_interval(bpm), (_) => _fire());
+    _isolateSendPort?.send(bpm);
   }
 
   void updateBeatsPerBar(int beatsPerBar) {
@@ -39,8 +81,13 @@ class MetronomeEngine {
   }
 
   void stop() {
-    _timer?.cancel();
-    _timer = null;
+    _running = false;
+    _isolateSendPort?.send('quit');
+    _isolate?.kill(priority: Isolate.immediate);
+    _isolate = null;
+    _receivePort?.close();
+    _receivePort = null;
+    _isolateSendPort = null;
     _beat = 0;
   }
 
@@ -50,12 +97,9 @@ class MetronomeEngine {
     if (_tick != null) await _soloud.disposeSource(_tick!);
   }
 
-  Duration _interval(int bpm) =>
-      Duration(microseconds: (60000000 / bpm).round());
-
-  void _fire() {
-    final isAccent = _beat == 0;
-    final source = isAccent ? _accent : _tick;
+  void _fireBeat() {
+    if (!_running) return;
+    final source = _beat == 0 ? _accent : _tick;
     if (source != null) _soloud.play(source);
     onBeat?.call(_beat);
     _beat = (_beat + 1) % _beatsPerBar;

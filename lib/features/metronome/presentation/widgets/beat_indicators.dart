@@ -34,15 +34,24 @@ class BeatIndicators extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(beatsPerBar, (i) {
             final isActive = isPlaying && i == currentBeat;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 80),
-              curve: Curves.easeOut,
+            final dot = isDark ? AppColors.surfaceDark : AppColors.surface;
+            return Container(
               margin: const EdgeInsets.symmetric(horizontal: 6),
-              width: isActive ? 56 : 48,
-              height: isActive ? 56 : 48,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 color: isActive ? primary : inactive,
-                borderRadius: BorderRadius.circular(isActive ? 12 : 8),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: dot,
+                  ),
+                ),
               ),
             );
           }),

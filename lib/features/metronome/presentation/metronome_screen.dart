@@ -22,15 +22,23 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
   // Tap-tempo: keep timestamps of last 5 taps
   final List<DateTime> _tapTimes = [];
   bool _engineReady = false;
+  late MetronomeNotifier _notifier;
 
   @override
   void initState() {
     super.initState();
+    _notifier = ref.read(metronomeProvider.notifier);
     _initEngine();
   }
 
+  @override
+  void dispose() {
+    _notifier.stop();
+    super.dispose();
+  }
+
   Future<void> _initEngine() async {
-    await ref.read(metronomeProvider.notifier).init();
+    await _notifier.init();
     if (mounted) setState(() => _engineReady = true);
   }
 
@@ -47,7 +55,7 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
       final bpm = (60000 / avgMs)
           .round()
           .clamp(MetronomeState.minBpm, MetronomeState.maxBpm);
-      ref.read(metronomeProvider.notifier).setBpm(bpm);
+      ref.read(metronomeProvider.notifier).applyBpm(bpm);
     }
   }
 
@@ -57,7 +65,12 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
     final state = ref.watch(metronomeProvider);
     final notifier = ref.read(metronomeProvider.notifier);
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _notifier.stop();
+      },
+      child: Scaffold(
       appBar: AppBarWidget(title: l10n.screenMetronomeTitle, showBack: true),
       body: SafeArea(
         child: Column(
@@ -81,6 +94,7 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
             BpmSlider(
               bpm: state.bpm,
               onChanged: notifier.setBpm,
+              onChangeEnd: notifier.applyBpm,
             ),
 
             const SizedBox(height: 20),
@@ -106,7 +120,7 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
                     : l10n.metronomeStart,
                 icon: state.isPlaying ? Icons.stop : Icons.play_arrow,
                 onPressed: _engineReady
-                    ? (state.isPlaying ? notifier.stop : notifier.start)
+                    ? (state.isPlaying ? notifier.stop : () => notifier.start())
                     : null,
               ),
             ),
@@ -115,6 +129,7 @@ class _MetronomeScreenState extends ConsumerState<MetronomeScreen> {
           ],
         ),
       ),
-    );
+    ), // Scaffold
+    ); // PopScope
   }
 }
