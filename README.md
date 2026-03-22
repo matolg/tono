@@ -1,17 +1,37 @@
-# tono
+# Tono
 
-A new Flutter project.
+Музыкальные инструменты для музыкантов — хроматический тюнер и метроном в одном приложении.
 
-## Getting Started
+## Возможности
 
-This project is a starting point for a Flutter application.
+- **Тюнер** — хроматический, с pitch detection (YIN/MPM), настройка эталонной частоты A4 (432–444 Hz)
+- **Метроном** — точный тайминг (±2ms), BPM 40–220, размеры такта 2–8, tap tempo
 
-A few resources to get you started if this is your first Flutter project:
+## Стек технологий
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+| Компонент | Технология |
+|---|---|
+| Framework | Flutter 3.41+ / Dart 3.11+ |
+| State Management | Riverpod 2.x |
+| Навигация | go_router 13.x |
+| Аудио (тюнер) | record 6.x |
+| Аудио (метроном) | flutter_soloud 2.x |
+| Хранилище | shared_preferences |
+| Разрешения | permission_handler |
+| Локализация | flutter_localizations + intl (ru, en) |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Платформы
+
+- Android (minSdk 26 / Android 8.0+) — в разработке
+- iOS (deployment target 15.0+) — планируется
+
+## Запуск
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Лицензия
+
+MIT — см. [LICENSE](LICENSE)
