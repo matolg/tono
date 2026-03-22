@@ -1,83 +1,25 @@
 import 'dart:async';
+import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
-
-// ── Top-level function required by compute() ─────────────────────────────────
-
-double? _runYin(List<Object> args) {
-  final buffer = args[0] as Float64List;
-  final sampleRate = args[1] as int;
-  return _yin(buffer, sampleRate);
-}
-
-/// YIN pitch detection algorithm.
-/// Returns the fundamental frequency in Hz, or null if none found.
-double? _yin(Float64List buffer, int sampleRate, {double threshold = 0.15}) {
-  final n = buffer.length;
-  final half = n ~/ 2;
-  final d = Float64List(half);
-
-  // Step 2: Difference function
-  for (int tau = 1; tau < half; tau++) {
-    double sum = 0;
-    for (int j = 0; j < half; j++) {
-      final delta = buffer[j] - buffer[j + tau];
-      sum += delta * delta;
-    }
-    d[tau] = sum;
-  }
-
-  // Step 3: Cumulative mean normalized difference function
-  d[0] = 1;
-  double running = 0;
-  for (int tau = 1; tau < half; tau++) {
-    running += d[tau];
-    d[tau] = d[tau] * tau / running;
-  }
-
-  // Step 4: Absolute threshold — find first tau below threshold (local min)
-  int tau = 2;
-  while (tau < half - 1) {
-    if (d[tau] < threshold) {
-      while (tau + 1 < half - 1 && d[tau + 1] < d[tau]) { tau++; }
-      break;
-    }
-    tau++;
-  }
-
-  if (tau >= half - 1 || d[tau] >= threshold) return null;
-
-  // Step 5: Parabolic interpolation for sub-sample accuracy
-  final betterTau = _parabolicInterp(d, tau);
-  if (betterTau <= 0) return null;
-
-  return sampleRate / betterTau;
-}
-
-double _parabolicInterp(Float64List d, int tau) {
-  if (tau <= 0 || tau >= d.length - 1) return tau.toDouble();
-  final y0 = d[tau - 1], y1 = d[tau], y2 = d[tau + 1];
-  final denom = y0 + y2 - 2 * y1;
-  if (denom.abs() < 1e-10) return tau.toDouble();
-  return tau + (y0 - y2) / (2 * denom);
-}
-
-// ── PitchDetector ─────────────────────────────────────────────────────────────
+import 'package:pitch_detector_dart/pitch_detector.dart' as pd;
 
 class PitchDetector {
   static const int _sampleRate = 44100;
-  static const int _bufferSize = 4096;
+  // 2048 samples × 2 bytes (PCM16) = 4096 bytes per frame
+  static const int _bufferSamples = 4096;
+  static const int _bufferBytes = _bufferSamples * 2;
 
-  final AudioRecorder _recorder = AudioRecorder();
+  final _detector = pd.PitchDetector(
+    audioSampleRate: _sampleRate.toDouble(),
+    bufferSize: _bufferSamples,
+  );
+
+  AudioRecorder _recorder = AudioRecorder();
   final StreamController<double?> _controller =
       StreamController<double?>.broadcast();
-  final List<int> _samples = [];
+  final List<int> _bytes = [];
   StreamSubscription<Uint8List>? _sub;
-
-  // True while a compute() isolate is running.
-  // Frames that arrive during processing are dropped to prevent backpressure.
-  bool _processing = false;
 
   Stream<double?> get frequencies => _controller.stream;
 
@@ -89,54 +31,71 @@ class PitchDetector {
         numChannels: 1,
       ),
     );
-    _sub = stream.listen(_onChunk);
+
+    _sub = stream.listen(
+      _onChunk,
+      onDone: _onStreamDone,
+      onError: (_) => _onStreamDone(),
+      cancelOnError: false,
+    );
   }
 
   void _onChunk(Uint8List chunk) {
-    // Parse signed 16-bit little-endian PCM samples
-    for (int i = 0; i + 1 < chunk.length; i += 2) {
-      int s = chunk[i] | (chunk[i + 1] << 8);
-      if (s >= 32768) s -= 65536;
-      _samples.add(s);
+    _bytes.addAll(chunk);
+
+    // Prevent unbounded growth if processing falls behind
+    if (_bytes.length > _bufferBytes * 4) {
+      _bytes.removeRange(0, _bytes.length - _bufferBytes);
     }
 
-    while (_samples.length >= _bufferSize) {
-      final frame = Float64List(_bufferSize);
-      for (int i = 0; i < _bufferSize; i++) {
-        frame[i] = _samples[i] / 32768.0;
-      }
-      _samples.removeRange(0, _bufferSize);
+    while (_bytes.length >= _bufferBytes) {
+      final frame = Uint8List.fromList(_bytes.sublist(0, _bufferBytes));
+      _bytes.removeRange(0, _bufferBytes);
       _processFrame(frame);
     }
   }
 
-  void _processFrame(Float64List frame) async {
-    // Drop this frame if a compute() is already running
-    if (_processing) return;
-    _processing = true;
+  void _processFrame(Uint8List frame) {
+    // Skip near-silent frames (check energy via Int16 view)
+    final samples = frame.buffer.asInt16List();
+    double energy = 0;
+    for (final s in samples) {
+      final f = s / 32768.0;
+      energy += f * f;
+    }
+    if (energy / samples.length < 0.0001) {
+      if (!_controller.isClosed) _controller.add(null);
+      return;
+    }
 
-    try {
-      // Skip near-silent frames to avoid noise false-positives
-      double energy = 0;
-      for (final s in frame) { energy += s * s; }
-      if (energy / _bufferSize < 0.0001) {
-        if (!_controller.isClosed) _controller.add(null);
-        return;
+    _detector.getPitchFromIntBuffer(frame).then((result) {
+      if (!_controller.isClosed) {
+        _controller.add(result.pitched ? result.pitch : null);
       }
+    });
+  }
 
-      final freq = await compute(_runYin, <Object>[frame, _sampleRate]);
-      if (!_controller.isClosed) _controller.add(freq);
-    } finally {
-      _processing = false;
+  void _onStreamDone() async {
+    if (_controller.isClosed) return;
+    _bytes.clear();
+    await _sub?.cancel();
+    _sub = null;
+    try { await _recorder.stop(); } catch (_) {}
+    try { _recorder.dispose(); } catch (_) {}
+    _recorder = AudioRecorder();
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!_controller.isClosed) {
+      try { await start(); } catch (_) {}
     }
   }
 
   Future<void> stop() async {
     await _sub?.cancel();
     _sub = null;
-    _processing = false;
-    if (await _recorder.isRecording()) await _recorder.stop();
-    _samples.clear();
+    _bytes.clear();
+    try {
+      if (await _recorder.isRecording()) await _recorder.stop();
+    } catch (_) {}
   }
 
   Future<void> dispose() async {
