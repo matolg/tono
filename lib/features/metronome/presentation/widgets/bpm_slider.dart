@@ -46,7 +46,8 @@ class _BpmSliderState extends State<BpmSlider> {
 
   @override
   void dispose() {
-    _stopRepeat();
+    _repeatTimer?.cancel();
+    _repeatTimer = null;
     super.dispose();
   }
 

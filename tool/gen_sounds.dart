@@ -3,13 +3,16 @@ import 'dart:math';
 import 'dart:typed_data';
 
 void makeWav(String path, double freq,
-    {double duration = 0.04, int sampleRate = 44100}) {
+    {double duration = 0.025, int sampleRate = 44100}) {
   final n = (sampleRate * duration).round();
   final samples = Int16List(n);
   for (var i = 0; i < n; i++) {
     final t = i / sampleRate;
-    final decay = exp(-t * 120);
-    samples[i] = (32767 * 0.9 * sin(2 * pi * freq * t) * decay)
+    // Fast attack (5ms ramp-up) then exponential decay — gives a sharp click
+    // with no discontinuity at start or end.
+    final attack = (t < 0.005) ? t / 0.005 : 1.0;
+    final decay = exp(-t * 180);
+    samples[i] = (32767 * 0.85 * sin(2 * pi * freq * t) * attack * decay)
         .round()
         .clamp(-32768, 32767);
   }
