@@ -30,13 +30,13 @@ class TuningReferenceSelector extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${l10n.tunerReferenceA4}: A = ${referenceA4.toStringAsFixed(0)} Hz',
+              '${l10n.tunerReferenceA4}: A = ${referenceA4.toStringAsFixed(0)}',
               style: AppTextStyles.label(color: textColor),
             ),
             const SizedBox(width: 4),
@@ -60,7 +60,7 @@ class TuningReferenceSelector extends StatelessWidget {
           Navigator.of(context).pop();
           onChanged(v);
         },
-        label: l10n.tunerReferenceA4,
+        label: l10n.tunerReferencePitchTitle,
       ),
     );
   }

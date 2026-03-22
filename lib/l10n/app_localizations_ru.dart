@@ -57,7 +57,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tunerStopListening => 'Остановить';
 
   @override
-  String get tunerReferenceA4 => 'Эталон A4';
+  String get tunerReferenceA4 => 'Строй';
+
+  @override
+  String get tunerReferencePitchTitle => 'Эталон A4';
 
   @override
   String get tunerNoSignal => 'Нет сигнала';

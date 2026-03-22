@@ -75,6 +75,10 @@ class PitchDetector {
   final List<int> _samples = [];
   StreamSubscription<Uint8List>? _sub;
 
+  // True while a compute() isolate is running.
+  // Frames that arrive during processing are dropped to prevent backpressure.
+  bool _processing = false;
+
   Stream<double?> get frequencies => _controller.stream;
 
   Future<void> start() async {
@@ -107,21 +111,30 @@ class PitchDetector {
   }
 
   void _processFrame(Float64List frame) async {
-    // Skip near-silent frames to avoid noise false-positives
-    double energy = 0;
-    for (final s in frame) { energy += s * s; }
-    if (energy / _bufferSize < 0.0001) {
-      if (!_controller.isClosed) _controller.add(null);
-      return;
-    }
+    // Drop this frame if a compute() is already running
+    if (_processing) return;
+    _processing = true;
 
-    final freq = await compute(_runYin, <Object>[frame, _sampleRate]);
-    if (!_controller.isClosed) _controller.add(freq);
+    try {
+      // Skip near-silent frames to avoid noise false-positives
+      double energy = 0;
+      for (final s in frame) { energy += s * s; }
+      if (energy / _bufferSize < 0.0001) {
+        if (!_controller.isClosed) _controller.add(null);
+        return;
+      }
+
+      final freq = await compute(_runYin, <Object>[frame, _sampleRate]);
+      if (!_controller.isClosed) _controller.add(freq);
+    } finally {
+      _processing = false;
+    }
   }
 
   Future<void> stop() async {
     await _sub?.cancel();
     _sub = null;
+    _processing = false;
     if (await _recorder.isRecording()) await _recorder.stop();
     _samples.clear();
   }

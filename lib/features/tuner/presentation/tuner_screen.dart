@@ -43,8 +43,6 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
     final isListening = state.status == TunerStatus.listening ||
         state.status == TunerStatus.detected;
-    final textSecondary =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
     final frameColor = isDark ? AppColors.surfaceDark : AppColors.surface;
 
     return Scaffold(
@@ -111,18 +109,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                 ),
               ),
 
-              const SizedBox(height: 8),
-
-              // ── Status label ──────────────────────────────────────────────
-              if (state.status == TunerStatus.listening)
-                Text(
-                  l10n.tunerListening,
-                  style: AppTextStyles.bodyM(color: textSecondary),
-                )
-              else
-                const SizedBox(height: 20),
-
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               // ── Reference selector (directly below gauge) ─────────────────
               TuningReferenceSelector(

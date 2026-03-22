@@ -57,7 +57,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tunerStopListening => 'Stop';
 
   @override
-  String get tunerReferenceA4 => 'Reference A4';
+  String get tunerReferenceA4 => 'Tuning';
+
+  @override
+  String get tunerReferencePitchTitle => 'Reference A4';
 
   @override
   String get tunerNoSignal => 'No signal';

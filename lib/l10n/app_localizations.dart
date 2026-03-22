@@ -194,11 +194,17 @@ abstract class AppLocalizations {
   /// **'Остановить'**
   String get tunerStopListening;
 
-  /// Reference pitch label
+  /// Tuning reference pill label
+  ///
+  /// In ru, this message translates to:
+  /// **'Строй'**
+  String get tunerReferenceA4;
+
+  /// Sheet title for reference pitch selector
   ///
   /// In ru, this message translates to:
   /// **'Эталон A4'**
-  String get tunerReferenceA4;
+  String get tunerReferencePitchTitle;
 
   /// Tuner no signal state
   ///

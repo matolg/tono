@@ -49,8 +49,11 @@
   "tunerStopListening": "Остановить",
   "@tunerStopListening": { "description": "Tuner stop button label" },
 
-  "tunerReferenceA4": "Эталон A4",
-  "@tunerReferenceA4": { "description": "Reference pitch label" },
+  "tunerReferenceA4": "Строй",
+  "@tunerReferenceA4": { "description": "Tuning reference pill label" },
+
+  "tunerReferencePitchTitle": "Эталон A4",
+  "@tunerReferencePitchTitle": { "description": "Sheet title for reference pitch selector" },
 
   "tunerNoSignal": "Нет сигнала",
   "@tunerNoSignal": { "description": "Tuner no signal state" },
