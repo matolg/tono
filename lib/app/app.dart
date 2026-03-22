@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'splash_screen.dart';
 import 'theme/app_theme.dart';
 
 class App extends ConsumerWidget {
@@ -14,9 +13,8 @@ class App extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      initialRoute: '/',
+      initialRoute: '/home',
       routes: {
-        '/': (_) => const SplashScreen(),
         '/home': (_) => const _HomeStub(),
       },
     );
