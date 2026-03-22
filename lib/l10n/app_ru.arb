@@ -67,8 +67,11 @@
   "metronomeBpmLabel": "BPM",
   "@metronomeBpmLabel": { "description": "BPM label" },
 
+  "settingsAppearanceSectionHeader": "Внешний вид",
+  "@settingsAppearanceSectionHeader": { "description": "Appearance section header in settings card" },
+
   "settingsThemeTitle": "Тема",
-  "@settingsThemeTitle": { "description": "Theme section title in settings" },
+  "@settingsThemeTitle": { "description": "Theme row label in settings" },
 
   "settingsThemeLight": "Светлая",
   "@settingsThemeLight": { "description": "Light theme option" },

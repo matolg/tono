@@ -230,7 +230,13 @@ abstract class AppLocalizations {
   /// **'BPM'**
   String get metronomeBpmLabel;
 
-  /// Theme section title in settings
+  /// Appearance section header in settings card
+  ///
+  /// In ru, this message translates to:
+  /// **'Внешний вид'**
+  String get settingsAppearanceSectionHeader;
+
+  /// Theme row label in settings
   ///
   /// In ru, this message translates to:
   /// **'Тема'**

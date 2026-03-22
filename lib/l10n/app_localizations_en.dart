@@ -75,6 +75,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get metronomeBpmLabel => 'BPM';
 
   @override
+  String get settingsAppearanceSectionHeader => 'Appearance';
+
+  @override
   String get settingsThemeTitle => 'Theme';
 
   @override

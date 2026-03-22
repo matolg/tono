@@ -31,6 +31,7 @@
   "metronomeStop": "Stop",
   "metronomeBpmLabel": "BPM",
 
+  "settingsAppearanceSectionHeader": "Appearance",
   "settingsThemeTitle": "Theme",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
