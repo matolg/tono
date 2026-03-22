@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/tool_registry/tool_definition.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ToolCard extends StatelessWidget {
   final ToolDefinition tool;
@@ -12,6 +13,7 @@ class ToolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -50,7 +52,7 @@ class ToolCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    tool.name,
+                    _localizedName(l10n, tool),
                     style: AppTextStyles.bodyL(
                       color: colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
@@ -58,7 +60,7 @@ class ToolCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    tool.subtitle,
+                    _localizedSubtitle(l10n, tool),
                     style: AppTextStyles.bodySm(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -75,16 +77,15 @@ class ToolCard extends StatelessWidget {
               )
             else
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'Скоро',
-                  style: AppTextStyles.caption(
-                    color: colorScheme.onSurface,
-                  ),
+                  l10n.badgeSoon,
+                  style: AppTextStyles.caption(color: colorScheme.onSurface),
                 ),
               ),
             const SizedBox(width: 16),
@@ -97,5 +98,35 @@ class ToolCard extends StatelessWidget {
       return Opacity(opacity: AppColors.opacityDisabled, child: card);
     }
     return card;
+  }
+
+  String _localizedName(AppLocalizations l10n, ToolDefinition tool) {
+    switch (tool.id) {
+      case 'tuner':
+        return l10n.toolTunerName;
+      case 'metronome':
+        return l10n.toolMetronomeName;
+      case 'ear_trainer':
+        return l10n.toolEarTrainerName;
+      case 'chord_trainer':
+        return l10n.toolChordTrainerName;
+      default:
+        return tool.name;
+    }
+  }
+
+  String _localizedSubtitle(AppLocalizations l10n, ToolDefinition tool) {
+    switch (tool.id) {
+      case 'tuner':
+        return l10n.toolTunerSubtitle;
+      case 'metronome':
+        return l10n.toolMetronomeSubtitle;
+      case 'ear_trainer':
+        return l10n.toolEarTrainerSubtitle;
+      case 'chord_trainer':
+        return l10n.toolChordTrainerSubtitle;
+      default:
+        return tool.subtitle;
+    }
   }
 }

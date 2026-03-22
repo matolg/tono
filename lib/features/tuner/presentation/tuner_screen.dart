@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/app_bar_widget.dart';
 
 class TunerScreen extends StatelessWidget {
@@ -7,9 +8,10 @@ class TunerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBarWidget(title: 'Тюнер', showBack: true),
-      body: const Center(child: Text('Тюнер — в разработке')),
+      appBar: AppBarWidget(title: l10n.screenTunerTitle, showBack: true),
+      body: Center(child: Text(l10n.inDevelopment)),
     );
   }
 }

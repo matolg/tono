@@ -1,0 +1,42 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Tono",
+  "badgeSoon": "Soon",
+  "inDevelopment": "In development",
+
+  "toolTunerName": "Tuner",
+  "toolTunerSubtitle": "Chromatic tuner",
+
+  "toolMetronomeName": "Metronome",
+  "toolMetronomeSubtitle": "Rhythm and tempo",
+
+  "toolEarTrainerName": "Ear Trainer",
+  "toolEarTrainerSubtitle": "Intervals and chords",
+
+  "toolChordTrainerName": "Chord Trainer",
+  "toolChordTrainerSubtitle": "Scales and triads",
+
+  "screenTunerTitle": "Tuner",
+  "screenMetronomeTitle": "Metronome",
+  "screenSettingsTitle": "Settings",
+
+  "tunerStartListening": "Start listening",
+  "tunerStopListening": "Stop",
+  "tunerReferenceA4": "Reference A4",
+  "tunerNoSignal": "No signal",
+  "tunerListening": "Listening...",
+
+  "metronomeStart": "Start",
+  "metronomeStop": "Stop",
+  "metronomeBpmLabel": "BPM",
+
+  "settingsThemeTitle": "Theme",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "System",
+  "settingsLanguageTitle": "Language",
+  "settingsAboutTitle": "About",
+
+  "errorMicrophonePermissionDenied": "Microphone access denied"
+}
