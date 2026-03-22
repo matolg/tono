@@ -1,6 +1,6 @@
 # Tono
 
-Музыкальные инструменты для музыкантов — хроматический тюнер и метроном в одном приложении.
+Мобильное приложение для музыкантов: хроматический тюнер и метроном в одном месте.
 
 ## Возможности
 
@@ -12,17 +12,17 @@
 | Компонент | Технология |
 |---|---|
 | Framework | Flutter 3.41+ / Dart 3.11+ |
-| State Management | Riverpod 2.x |
-| Навигация | go_router 13.x |
+| State Management | Riverpod 3.x |
+| Навигация | go_router 17.x |
 | Аудио (тюнер) | record 6.x |
-| Аудио (метроном) | flutter_soloud 2.x |
+| Аудио (метроном) | flutter_soloud 3.x |
 | Хранилище | shared_preferences |
 | Разрешения | permission_handler |
 | Локализация | flutter_localizations + intl (ru, en) |
 
 ## Платформы
 
-- Android (minSdk 26 / Android 8.0+) — в разработке
+- Android (minSdk 26 / Android 8.0+) — готово
 - iOS (deployment target 15.0+) — планируется
 
 ## Запуск
