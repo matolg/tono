@@ -21,7 +21,7 @@ class TuningReferenceSelector extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.surfaceVariantDark : AppColors.surfaceVariant;
     final textColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
     final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(

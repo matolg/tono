@@ -20,10 +20,9 @@ class NoteDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = isDark ? AppColors.primaryDark : AppColors.primary;
-    final secondary =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
-    final tertiary =
+    final textPrimary =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final textSecondary =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
 
     final hasNote = noteName != null && octave != null;
@@ -31,21 +30,23 @@ class NoteDisplay extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Note name + octave
+        // Note name + octave superscript
         Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               hasNote ? noteName! : '—',
-              style: AppTextStyles.monoDisplay(color: hasNote ? primary : secondary),
+              style: AppTextStyles.monoDisplay(
+                color: hasNote ? textPrimary : textSecondary,
+              ).copyWith(fontSize: 48),
             ),
             if (hasNote)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
                   '${octave!}',
-                  style: AppTextStyles.monoLabel(color: secondary),
+                  style: AppTextStyles.monoLabel(color: textSecondary),
                 ),
               ),
           ],
@@ -53,10 +54,8 @@ class NoteDisplay extends StatelessWidget {
         const SizedBox(height: 4),
         // Frequency in Hz
         Text(
-          frequency != null
-              ? '${frequency!.toStringAsFixed(1)} Hz'
-              : '',
-          style: AppTextStyles.bodyM(color: tertiary),
+          frequency != null ? '${frequency!.toStringAsFixed(1)} Hz' : '',
+          style: AppTextStyles.bodyM(color: textSecondary),
         ),
       ],
     );

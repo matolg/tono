@@ -31,7 +31,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
     final notifier = ref.read(tunerProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Haptic feedback when entering/leaving in-tune zone (|cents| <= 5)
+    // Haptic feedback when entering in-tune zone (|cents| <= 5)
     final inTune =
         state.status == TunerStatus.detected &&
         state.cents != null &&
@@ -43,9 +43,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
     final isListening = state.status == TunerStatus.listening ||
         state.status == TunerStatus.detected;
-
     final textSecondary =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
+    final frameColor = isDark ? AppColors.surfaceDark : AppColors.surface;
 
     return Scaffold(
       appBar: AppBarWidget(title: l10n.screenTunerTitle, showBack: true),
@@ -63,47 +63,74 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                 frequency: state.frequency,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              // ── Gauge ─────────────────────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                child: AspectRatio(
-                  aspectRatio: 340 / 177,
-                  child: GaugeWidget(
-                    cents: state.status == TunerStatus.detected
-                        ? state.cents
-                        : null,
+              // ── Gauge Frame (card with gauge + octave dots inside) ─────────
+              Container(
+                decoration: BoxDecoration(
+                  color: frameColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: AspectRatio(
+                    aspectRatio: 340 / 177,
+                    child: LayoutBuilder(
+                      builder: (_, constraints) {
+                        final h = constraints.maxHeight;
+                        return Stack(
+                          children: [
+                            // Gauge bars, needle, labels
+                            Positioned.fill(
+                              child: GaugeWidget(
+                                cents: state.status == TunerStatus.detected
+                                    ? state.cents
+                                    : null,
+                              ),
+                            ),
+                            // Octave dots at y=127 in 177px design space
+                            Positioned(
+                              top: h * 127 / 177,
+                              left: 0,
+                              right: 0,
+                              height: h * 40 / 177,
+                              child: Center(
+                                child: OctaveDots(
+                                  octave:
+                                      state.status == TunerStatus.detected
+                                          ? state.octave
+                                          : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // ── Octave dots ───────────────────────────────────────────────
-              OctaveDots(
-                octave: state.status == TunerStatus.detected
-                    ? state.octave
-                    : null,
               ),
 
               const SizedBox(height: 8),
 
               // ── Status label ──────────────────────────────────────────────
-              Text(
-                _statusLabel(state, l10n),
-                style: AppTextStyles.bodyM(color: textSecondary),
-              ),
+              if (state.status == TunerStatus.listening)
+                Text(
+                  l10n.tunerListening,
+                  style: AppTextStyles.bodyM(color: textSecondary),
+                )
+              else
+                const SizedBox(height: 20),
 
-              const Spacer(),
+              const SizedBox(height: 8),
 
-              // ── Reference selector ────────────────────────────────────────
+              // ── Reference selector (directly below gauge) ─────────────────
               TuningReferenceSelector(
                 referenceA4: state.referenceA4,
                 onChanged: notifier.setReferenceA4,
               ),
 
-              const SizedBox(height: 16),
+              const Spacer(),
 
               // ── Error message ─────────────────────────────────────────────
               if (state.status == TunerStatus.error)
@@ -135,14 +162,5 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
         ),
       ),
     );
-  }
-
-  String _statusLabel(TunerState state, AppLocalizations l10n) {
-    return switch (state.status) {
-      TunerStatus.idle => '',
-      TunerStatus.listening => l10n.tunerListening,
-      TunerStatus.detected => '',
-      TunerStatus.error => '',
-    };
   }
 }
