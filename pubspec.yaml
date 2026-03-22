@@ -1,0 +1,39 @@
+name: tono
+description: "Tono — музыкальные инструменты: тюнер и метроном."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+  go_router: ^13.0.0
+  shared_preferences: ^2.2.0
+  permission_handler: ^11.0.0
+  record: ^6.0.0
+  flutter_soloud: ^2.0.0
+  intl: ^0.20.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.0
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.3.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - assets/sounds/
