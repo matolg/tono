@@ -44,10 +44,11 @@ Write-Host "Bumping version: $($Matches[1]).$($Matches[2]).$($Matches[3])+$($Mat
 $updated = $pubspec -replace 'version:\s*\d+\.\d+\.\d+\+\d+', "version: $newVersion"
 Set-Content "$PSScriptRoot/../pubspec.yaml" $updated -NoNewline
 
-# --- Resolve push URL (convert SSH to HTTPS so gh auth is used) ---
+# --- Ensure origin uses HTTPS (so gh auth works and VSCode tracking stays in sync) ---
 $remoteUrl = git remote get-url origin
 if ($remoteUrl -match 'git@github\.com:(.+?)(?:\.git)?$') {
-    $remoteUrl = "https://github.com/$($Matches[1]).git"
+    $httpsUrl = "https://github.com/$($Matches[1]).git"
+    git remote set-url origin $httpsUrl
 }
 
 # --- Commit & tag ---
@@ -56,8 +57,8 @@ try {
     git add pubspec.yaml
     git commit -m "chore: bump version to $newVersion"
     git tag "v$newVersionName"
-    git push $remoteUrl
-    git push $remoteUrl "v$newVersionName"
+    git push origin
+    git push origin "v$newVersionName"
 
     # --- Create GitHub Release (triggers CD workflow) ---
     gh release create "v$newVersionName" `
