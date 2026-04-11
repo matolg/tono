@@ -10,12 +10,17 @@ class SegmentControl<T> extends StatelessWidget {
   final String Function(T) labelOf;
   final ValueChanged<T> onChanged;
 
+  /// When true the control stretches to fill its parent's width and
+  /// distributes segments evenly. Defaults to false (compact/intrinsic width).
+  final bool expanded;
+
   const SegmentControl({
     super.key,
     required this.values,
     required this.selected,
     required this.labelOf,
     required this.onChanged,
+    this.expanded = false,
   });
 
   @override
@@ -29,10 +34,10 @@ class SegmentControl<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
         children: values.map((v) {
           final isSelected = v == selected;
-          return GestureDetector(
+          Widget item = GestureDetector(
             onTap: () => onChanged(v),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
@@ -54,6 +59,7 @@ class SegmentControl<T> extends StatelessWidget {
               ),
             ),
           );
+          return expanded ? Expanded(child: item) : item;
         }).toList(),
       ),
     );

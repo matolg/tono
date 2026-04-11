@@ -129,20 +129,22 @@ class _ThemeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: AppTextStyles.bodyL(color: colorScheme.onSurface)
                 .copyWith(fontWeight: FontWeight.w500),
           ),
+          const SizedBox(height: 10),
           SegmentControl<ThemeMode>(
             values: themeModes,
             selected: selected,
             labelOf: labelOf,
             onChanged: onChanged,
+            expanded: true,
           ),
         ],
       ),
