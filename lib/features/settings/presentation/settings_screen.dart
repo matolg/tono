@@ -33,7 +33,6 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
         children: [
-          // Appearance section
           _Section(
             header: l10n.settingsAppearanceSectionHeader,
             colorScheme: colorScheme,
@@ -47,14 +46,13 @@ class SettingsScreen extends ConsumerWidget {
                     ref.read(themeModeProvider.notifier).setThemeMode(m),
                 colorScheme: colorScheme,
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Language section
-          _Section(
-            header: l10n.settingsLanguageTitle,
-            colorScheme: colorScheme,
-            children: [
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: 16,
+                endIndent: 16,
+                color: colorScheme.outlineVariant,
+              ),
               _NavigationRow(
                 label: l10n.settingsLanguageTitle,
                 value: currentLangLabel,
