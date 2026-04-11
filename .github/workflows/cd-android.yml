@@ -3,6 +3,22 @@ name: CD Android
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Play Store track to upload to"
+        required: true
+        default: internal
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      rollout:
+        description: "Rollout fraction for production (e.g. 0.1 for 10%). Ignored for other tracks."
+        required: false
+        default: "1.0"
 
 jobs:
   deploy:
@@ -35,11 +51,12 @@ jobs:
           KEYSTORE_PATH: ${{ runner.temp }}/tono.keystore
         run: flutter build appbundle --release
 
-      - name: Upload to Google Play (internal track)
+      - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
           packageName: com.tono.app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: internal
-          status: completed
+          track: ${{ inputs.track || 'internal' }}
+          status: ${{ (inputs.track == 'production' && inputs.rollout != '1.0') && 'inProgress' || 'completed' }}
+          userFraction: ${{ inputs.rollout || '1.0' }}

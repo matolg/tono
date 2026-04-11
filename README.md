@@ -32,6 +32,42 @@ flutter pub get
 flutter run
 ```
 
+## Релиз
+
+### Android (Google Play)
+
+Требования: [GitHub CLI (`gh`)](https://cli.github.com/) установлен и авторизован (`gh auth login`), git настроен.
+
+#### 1. Выпустить новую версию
+
+```powershell
+# Выпустить новую версию (загружается в internal track)
+.\scripts\release.ps1          # patch: 1.0.1
+.\scripts\release.ps1 minor    # minor: 1.1.0
+.\scripts\release.ps1 major    # major: 2.0.0
+```
+
+После завершения CI/CD релиз появится во внутреннем треке Play Console.
+
+#### 2. Продвинуть релиз в другой трек
+
+Открыть вкладку **Actions → CD Android → Run workflow** на GitHub и выбрать нужный трек:
+
+| Трек | Описание |
+|---|---|
+| `internal` | Внутренние тестировщики (до 100 человек) |
+| `alpha` | Закрытое тестирование |
+| `beta` | Открытое тестирование |
+| `production` | Публичный релиз (можно указать rollout fraction, напр. `0.1` = 10%) |
+
+Либо через CLI:
+
+```bash
+gh workflow run cd-android.yml -f track=beta
+gh workflow run cd-android.yml -f track=production -f rollout=0.1
+gh workflow run cd-android.yml -f track=production -f rollout=1.0
+```
+
 ## Лицензия
 
 MIT — см. [LICENSE](LICENSE)
