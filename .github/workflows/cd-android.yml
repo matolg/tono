@@ -52,11 +52,22 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload to Google Play
+        if: ${{ inputs.track != 'production' || inputs.rollout == '' || inputs.rollout == '1.0' }}
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
           packageName: com.tono.app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: ${{ inputs.track || 'internal' }}
-          status: ${{ (inputs.track == 'production' && inputs.rollout != '1.0') && 'inProgress' || 'completed' }}
-          userFraction: ${{ inputs.rollout || '1.0' }}
+          status: completed
+
+      - name: Upload to Google Play (staged rollout)
+        if: ${{ inputs.track == 'production' && inputs.rollout != '' && inputs.rollout != '1.0' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+          packageName: com.tono.app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: production
+          status: inProgress
+          userFraction: ${{ inputs.rollout }}
